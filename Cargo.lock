@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "Learn-Rust-TokioTcpUdp"
+name = "Learn-Rust-TcpUdp"
 version = "0.1.0"
