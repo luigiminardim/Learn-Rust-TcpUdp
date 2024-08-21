@@ -1,6 +1,6 @@
 use std::{
     io::{BufRead, BufReader, Read, Write},
-    net::{TcpListener, TcpStream},
+    net::TcpStream,
     thread,
 };
 
@@ -60,45 +60,5 @@ impl Channel {
         let sender_thread = thread::spawn(|| self.sender.run());
         self.receiver.run();
         drop(sender_thread);
-    }
-}
-
-pub struct Server {
-    channel: Channel,
-}
-
-impl Server {
-    pub fn new() -> Self {
-        let stream = TcpListener::bind("127.0.0.1:3000")
-            .expect("Failed to bind to address")
-            .accept()
-            .expect("Failed to accept connection")
-            .0;
-        println!("Connected to client");
-        Self {
-            channel: Channel::new(stream),
-        }
-    }
-
-    pub fn run(self) {
-        self.channel.run();
-    }
-}
-
-pub struct Client {
-    channel: Channel,
-}
-
-impl Client {
-    pub fn new() -> Self {
-        let stream = TcpStream::connect("127.0.0.1:3000").expect("Failed to connect to server");
-        println!("Connected to server");
-        Self {
-            channel: Channel::new(stream),
-        }
-    }
-
-    pub fn run(self) {
-        self.channel.run();
     }
 }
