@@ -23,21 +23,20 @@ impl Receiver {
 }
 
 struct Sender {
-    stream: TcpStream,
+    buf_writer: Box<dyn Write + Send>,
 }
 
 impl Sender {
-    fn run(self) {
-        let mut stream = self.stream.try_clone().expect("Failed to clone stream");
+    fn run(mut self) {
         loop {
-            let mut buffer = String::new();
+            let mut stdin_buffer = String::new();
             std::io::stdin()
-                .read_line(&mut buffer)
+                .read_line(&mut stdin_buffer)
                 .expect("Failed to read from stdin");
-            stream
-                .write_all(buffer.as_bytes())
+            self.buf_writer
+                .write_all(stdin_buffer.as_bytes())
                 .expect("Failed to write to stream");
-            stream.flush().expect("Failed to flush stream");
+            self.buf_writer.flush().expect("Failed to flush stream");
         }
     }
 }
@@ -50,10 +49,10 @@ pub struct Channel {
 impl Channel {
     pub fn new(stream: TcpStream) -> Self {
         let buf_reader = BufReader::new(Box::new(stream.try_clone().expect("Failed to clone stream")));
-
+        let buf_writer = Box::new(stream);
         Self {
             receiver: Receiver { buf_reader: Box::new(buf_reader) },
-            sender: Sender { stream },
+            sender: Sender { buf_writer },
         }
     }
 
