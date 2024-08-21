@@ -1,18 +1,17 @@
 use std::{
-    io::{BufRead, Write},
+    io::{BufRead, BufReader, Read, Write},
     net::{TcpListener, TcpStream},
     thread,
 };
 
 struct Receiver {
-    stream: TcpStream,
+    buf_reader: Box<BufReader<dyn Read>>,
 }
 
 impl Receiver {
     fn run(self) {
-        let mut stream = self.stream.try_clone().expect("Failed to clone stream");
-        let buf_reader = std::io::BufReader::new(&mut stream);
-        for line in buf_reader
+        for line in self
+            .buf_reader
             .lines()
             .map(|line| line.expect("Failed to read from stream"))
             .take_while(|line| !line.is_empty())
@@ -50,10 +49,10 @@ pub struct Channel {
 
 impl Channel {
     pub fn new(stream: TcpStream) -> Self {
+        let buf_reader = BufReader::new(Box::new(stream.try_clone().expect("Failed to clone stream")));
+
         Self {
-            receiver: Receiver {
-                stream: stream.try_clone().expect("Failed to clone stream"),
-            },
+            receiver: Receiver { buf_reader: Box::new(buf_reader) },
             sender: Sender { stream },
         }
     }
