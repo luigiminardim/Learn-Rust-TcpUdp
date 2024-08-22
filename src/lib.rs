@@ -1,8 +1,10 @@
+pub mod udp;
+
 use std::{
     io::{BufRead, BufReader, Read, Write},
-    net::TcpStream,
     thread,
 };
+
 
 struct Receiver {
     buf_reader: Box<dyn Read>,
@@ -47,9 +49,7 @@ pub struct Channel {
 }
 
 impl Channel {
-    pub fn new(stream: TcpStream) -> Self {
-        let buf_reader = Box::new(stream.try_clone().expect("Failed to clone stream"));
-        let buf_writer = Box::new(stream);
+    pub fn new(buf_reader: Box<dyn Read>, buf_writer: Box<dyn Write + Send>) -> Self {
         Self {
             receiver: Receiver { buf_reader },
             sender: Sender { buf_writer },

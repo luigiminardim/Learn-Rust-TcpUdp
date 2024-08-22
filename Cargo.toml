@@ -11,5 +11,10 @@ path = "src/bin/server.rs"
 name = "client"
 path = "src/bin/client.rs"
 
+[features]
+default = ["udp"]
+tcp = []
+udp = []
+
 [dependencies]
 
