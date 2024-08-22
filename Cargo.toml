@@ -1,11 +1,6 @@
 [package]
-name = "Learn-Rust-TcpUdp"
+name = "learn-rust-tcp_udp"
 version = "0.1.0"
 edition = "2021"
-
-[features]
-default = ["server"]
-client = []
-server = []
 
 [dependencies]
