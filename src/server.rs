@@ -20,6 +20,12 @@ impl DerefMut for Server {
     }
 }
 
+impl Default for Server {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Server {
     /// Sets up a listener at 127.0.0.1:3000
     pub fn new() -> Self {
@@ -29,19 +35,21 @@ impl Server {
 
     /// Accepts a connection, then reads lines from it until EOF or an error occurs.
     pub fn run(&mut self) {
-        while let Ok((mut stream, _)) = self.accept() {
-            let buf = BufReader::new(&mut stream);
-            let mut lines = buf.lines();
+        for stream in self.incoming() {
+            match stream {
+                Ok(s) => {
+                    let buf_reader = BufReader::new(&s);
+                    let line = buf_reader.lines().next().unwrap().unwrap();
 
-            while let Some(Ok(body)) = lines.next() {
-                println!("Received: {}", body);
+                    println!("Received: {line}");
+                }
+                Err(e) => {
+                    eprintln!("Failed to receive connection!");
+                    eprintln!("{}", e);
+                    println!("Exiting...");
+                    break;
+                }
             }
         }
-    }
-}
-
-impl Default for Server {
-    fn default() -> Self {
-        Self::new()
     }
 }
